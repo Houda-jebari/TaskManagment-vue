@@ -1,31 +1,29 @@
 <!-- Register.vue -->
-<template class="container">
-  <div class="card">
-    <h2 >Sign In</h2>
-    <p>Please login to continue to your account.</p>
-    <form @submit.prevent="login">
-        <label > Email</label>
-        <input type="email"  required v-model="form.email">
-         <label> Password</label>
-         <div class="password-input">
-            <input  required v-model="form.password" :type="showPassword? 'text':'password'">
-            <img src="../assets/icons/eye.png" @click="showPassword=!showPassword" class="eye-icon">
-         </div>
-        
+<template>
+  <div class="container">
+    <div class="card">
+      <h2>Login</h2>
+      <p>Please login to continue to your account.</p>
+      <form @submit.prevent="login">
+        <label>Email</label>
+        <input type="email" required v-model="form.email">
+        <label>Password</label>
+        <div class="password-input">
+          <input required v-model="form.password" :type="showPassword ? 'text' : 'password'">
+          <img src="../assets/icons/eye.png" @click="showPassword=!showPassword" class="eye-icon">
+        </div>
         <div class="stayLogged">
-         <input type="checkbox"   >  
-         <label> keep me logged in</label> 
+          <input type="checkbox">  
+          <label>keep me logged in</label> 
         </div>
         <div class="submit">
-        <button > Sign in </button>
+          <button type="submit">Sign in</button>
         </div>
         <div v-if="loginError" class="error">{{ loginError }}</div>
-
-    </form>
-    <p> Need an Account? <router-link  class="register" to="/register">Sign in</router-link > </p>
-    
+      </form>
+      <p>Need an Account? <router-link class="register" to="/register">Sign up</router-link></p>
+    </div>
   </div>
-
 </template>
 
 <script setup>
@@ -33,29 +31,53 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
-let showPassword=false;
+let showPassword = false;
 
 const form = ref({
-  name: '',
   email: '',
   password: '',
-})
+});
 
 const router = useRouter();
+const loginError = ref(null);
 
-const login=async()=>{
-try { const response =await axios.get('/login',form.value);
-  console.log(response.data);
-  //router.push('/dashboard');
- }catch (error){
-  console.error('Login error :',error);
- }
+const login = async () => {
+  loginError.value = null; // Clear previous errors
+  
+  try {
+    console.log('Sending login request with:', form.value); // Debugging line
+    const response = await axios.post('http://127.0.0.1:8001/api/login', form.value);    
+    const { user, token } = response.data;
+
+    const role = response.data.role;
+
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('role', role);
+    localStorage.setItem('token', token);
+ 
+   console.log('Login successful, redirecting to:', role === 'admin' ? '/dashboard' : '/board');
+
+    if (role === 'admin') {
+      router.push('/dashboard');
+    } else {
+      router.push('/board');
+    }
+  } catch (error) {
+    if (error.response && error.response.data) {
+      loginError.value = error.response.data.message;
+    } else {
+      loginError.value = 'An unexpected error occurred. Please try again.';
+    }
+    console.error('Login error:', error);
+  }
 };
-
 </script>
 
 
-<style>
+
+
+
+<style scoped>
 
 .card{
    max-width: 420px;
@@ -65,7 +87,11 @@ try { const response =await axios.get('/login',form.value);
   padding: 40px;
   border-radius: 10px;
 }
-
+.card  h2{
+  font-weight:700;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
 label{
   color:#aaa;
   display: inline-block;
@@ -94,6 +120,7 @@ input[type ="checkbox"]{
 }
 p{
   font-size:14px;
+  font-weight: 300;
   color:#555
 }
 button{

@@ -45,6 +45,7 @@ import { useRouter } from 'vue-router';
 
 let showPassword=false;
 
+
 const form = ref({
   name: '',
   email: '',
@@ -62,7 +63,7 @@ const register = async () => {
     console.log(response.data); 
     message.value = response.data.message;
     // Optionally redirect to login page after successful registration
-    //router.push('/login');
+    router.push('/login');
   }  catch (error) {
         if (error.response && error.response.status === 422) {
           errors.value = error.response.data.errors || {};
@@ -76,7 +77,12 @@ const register = async () => {
 </script>
 
 
-<style>
+<style scoped>
+.card  h2{
+  font-weight:700;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
 
 .error {
   color: red;
@@ -119,7 +125,8 @@ input[type ="checkbox"]{
 }
 p{
   font-size:14px;
-  color:#555
+  color:#555;
+  font-weight: 300;
 }
 button{
   background:#367AFF;
